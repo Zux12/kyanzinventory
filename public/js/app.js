@@ -242,6 +242,141 @@ function renderProductPicker() {
   });
 }
 
+function renderProductPickerPrefilled() {
+  const wrap = $("productPicker");
+  wrap.innerHTML = "";
+
+  PRODUCTS.forEach((p) => {
+    const card = document.createElement("div");
+    card.className = "prodCard";
+
+    const top = document.createElement("div");
+    top.className = "prodTop";
+
+    const name = document.createElement("div");
+    name.className = "prodName";
+    name.textContent = p.name;
+
+    const stock = document.createElement("div");
+    stock.className = "prodStock";
+    stock.textContent = `Stock: ${p.stock}`;
+
+    top.appendChild(name);
+    top.appendChild(stock);
+
+    const qtyRow = document.createElement("div");
+    qtyRow.className = "qtyRow";
+
+    const minus = document.createElement("button");
+    minus.className = "qtyBtn";
+    minus.textContent = "−";
+
+    const qty = document.createElement("input");
+    qty.className = "input qtyInput";
+    qty.type = "number";
+    qty.min = "0";
+
+    const plus = document.createElement("button");
+    plus.className = "qtyBtn";
+    plus.textContent = "+";
+
+    const price = document.createElement("input");
+    price.className = "input priceInput";
+    price.type = "number";
+    price.step = "0.01";
+    price.placeholder = "Unit price";
+
+    // Prefill from existing selection (if any)
+    const sel = SELECTED[p._id];
+    qty.value = sel ? String(sel.qty) : "0";
+    price.value = sel ? String(sel.unitPrice) : (p.basePrice ? String(p.basePrice) : "");
+
+    function syncSelected() {
+      const q = Number(qty.value) || 0;
+      const pr = Number(price.value) || 0;
+
+      if (q > 0) {
+        SELECTED[p._id] = { qty: q, unitPrice: pr };
+      } else {
+        delete SELECTED[p._id];
+      }
+    }
+
+    minus.onclick = () => {
+      qty.value = String(Math.max(0, (Number(qty.value) || 0) - 1));
+      syncSelected();
+    };
+    plus.onclick = () => {
+      qty.value = String((Number(qty.value) || 0) + 1);
+      syncSelected();
+    };
+    qty.oninput = syncSelected;
+    price.oninput = syncSelected;
+
+    qtyRow.appendChild(minus);
+    qtyRow.appendChild(qty);
+    qtyRow.appendChild(plus);
+    qtyRow.appendChild(price);
+
+    card.appendChild(top);
+    card.appendChild(qtyRow);
+    wrap.appendChild(card);
+  });
+}
+
+
+async function saveOrderEdits(orderId) {
+  const msg = $("orderMsg");
+  setMsg(msg, "");
+
+  try {
+    const customerName = $("custName").value.trim();
+    const phone = $("custPhone").value.trim();
+    const email = $("custEmail").value.trim();
+    const overrideTotalRaw = $("overrideTotal").value;
+
+    const items = Object.entries(SELECTED).map(([productId, v]) => ({
+      productId,
+      qty: v.qty,
+      unitPrice: v.unitPrice
+    }));
+
+    const payload = {
+      customerName,
+      phone,
+      email,
+      items,
+      overrideTotal: overrideTotalRaw === "" ? "" : Number(overrideTotalRaw)
+    };
+
+    const updated = await apiFetch(`/api/orders/${orderId}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload)
+    });
+
+    setMsg(msg, `✅ Updated reserved order. (Order ID: ${updated._id})`, true);
+
+    // reset the button back to create mode
+    $("btnSaveOrder").textContent = "Save Order & Block Stock";
+    $("btnSaveOrder").onclick = saveOrder;
+
+    // clear form
+    $("custName").value = "";
+    $("custPhone").value = "";
+    $("custEmail").value = "";
+    $("overrideTotal").value = "";
+    SELECTED = {};
+    await loadProducts();
+    renderProductPicker();
+
+    // refresh orders list
+    await loadOrders();
+  } catch (e) {
+    setMsg(msg, `⛔ ${e.message}`, false);
+  }
+}
+
+
 async function saveOrder() {
   const msg = $("orderMsg");
   setMsg(msg, "");
@@ -320,9 +455,11 @@ function renderOrdersTable(orders) {
         <td>${items}</td>
         <td>RM ${total}<br><span class="muted">Receipt: ${receipt}</span></td>
         <td><span class="muted">${o.createdBy}</span></td>
-        <td>
-          <button class="btn" data-open="${o._id}">Open</button>
-        </td>
+<td>
+  <button class="btn" data-open="${o._id}">Open</button>
+  ${o.status === "reserved" ? `<button class="btn gold" data-edit="${o._id}">Edit</button>` : ""}
+</td>
+
       </tr>
     `;
   }).join("");
@@ -363,7 +500,43 @@ function bindOrdersActions(orders) {
       }
     };
   });
+
+  document.querySelectorAll("[data-edit]").forEach((btn) => {
+  btn.onclick = async () => {
+    const id = btn.getAttribute("data-edit");
+    const o = orders.find(x => x._id === id);
+    if (!o) return;
+
+    // load products for picker
+    await loadProducts();
+
+    // prefill customer fields
+    $("custName").value = o.customerName || "";
+    $("custPhone").value = o.phone || "";
+    $("custEmail").value = o.email || "";
+    $("overrideTotal").value = (o.overrideTotal ?? "");
+
+    // prefill SELECTED items
+    SELECTED = {};
+    (o.items || []).forEach(it => {
+      SELECTED[it.productId] = { qty: Number(it.qty) || 0, unitPrice: Number(it.unitPrice) || 0 };
+    });
+
+    // render picker with prefilled values
+    renderProductPickerPrefilled();
+
+    // switch button behavior to "Save Changes"
+    $("btnSaveOrder").textContent = "Save Changes (Update Reservation)";
+    $("btnSaveOrder").onclick = () => saveOrderEdits(o._id);
+
+    setMsg($("orderMsg"), `Editing reserved order: ${o.customerName} (${o.phone})`);
+    showView("newOrder");
+  };
+});
+
 }
+
+
 
 function renderProductsTable() {
   const wrap = $("productsTable");
