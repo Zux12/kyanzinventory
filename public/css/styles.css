@@ -453,3 +453,146 @@ label{font-size:13px;color:var(--muted)}
   color:var(--muted);
   letter-spacing:0.08em;
 }
+
+
+/* ===== Enterprise Console Enhancements ===== */
+
+.brandTitle{
+  font-size: 16px;
+}
+
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(215,177,90,0.32);
+  background: rgba(215,177,90,0.10);
+  color: rgba(242,209,127,0.95);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.sepDot{
+  color: rgba(255,255,255,0.18);
+  margin: 0 6px;
+}
+
+.muted.smallcaps{
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Search looks like an enterprise control */
+.searchWrap{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding: 0 12px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background: rgba(255,255,255,0.03);
+  min-width: 320px;
+}
+
+.searchIcon{
+  color: rgba(168,176,197,0.95);
+  font-weight: 800;
+  user-select:none;
+}
+
+.searchInput{
+  border:0 !important;
+  background: transparent !important;
+  padding-left: 0 !important;
+  box-shadow:none !important;
+}
+
+.searchInput:focus{
+  outline:none;
+}
+
+@media (max-width: 700px){
+  .searchWrap{ min-width: 0; flex: 1; }
+}
+
+/* Sidebar tabs feel like a real console nav */
+.sidebar{
+  padding: 12px;
+}
+
+.tab{
+  position: relative;
+  padding: 12px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+}
+
+.tab:hover{
+  background: rgba(255,255,255,0.04);
+}
+
+.tab.active{
+  background: rgba(215,177,90,0.12);
+  border-color: rgba(215,177,90,0.28);
+}
+
+.tab.active::before{
+  content:"";
+  position:absolute;
+  left: -12px;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(242,209,127,1), rgba(215,177,90,0.55));
+}
+
+/* Module cards (optional class you can add) */
+.moduleCard h2{
+  margin: 0;
+}
+
+.moduleHdr{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom: 10px;
+}
+
+.moduleSub{
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+
+/* Cleaner headings and spacing */
+.card h2{
+  letter-spacing: 0.02em;
+}
+
+.card h3{
+  letter-spacing: 0.02em;
+}
+
+/* Make inner cards slightly more premium */
+.card.inner{
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.025);
+}
+
+/* Tables: more enterprise feel */
+.table th{
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.table td{
+  vertical-align: top;
+}
