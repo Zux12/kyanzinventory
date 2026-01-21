@@ -633,26 +633,17 @@ function renderCheckout(order) {
     return;
   }
 
-  const itemsRows = order.items.map((it) => {
-    return `
-      <tr>
-        <td>${it.name}</td>
-        <td><input class="input small" data-qty="${it.productId}" type="number" value="${it.qty}" /></td>
-<tr>
-  <td>${it.name}</td>
-  <td><input class="input small" data-qty="${it.productId}" type="number" value="${it.qty}" /></td>
-  <td><input class="input small" data-up="${it.productId}" type="number" step="0.01" value="${it.unitPrice}" /></td>
-  <td><b>RM ${(it.qty * it.unitPrice).toFixed(2)}</b></td>
-</tr>
+const itemsRows = order.items.map((it) => {
+  return `
+    <tr>
+      <td>${it.name}</td>
+      <td><input class="input small" data-qty="${it.productId}" type="number" value="${it.qty}" /></td>
+      <td><input class="input small" data-up="${it.productId}" type="number" step="0.01" value="${it.unitPrice}" /></td>
+      <td><b>RM ${(it.qty * it.unitPrice).toFixed(2)}</b></td>
+    </tr>
+  `;
+}).join("");
 
-<div class="rowBetween" style="margin-top:12px">
-  <b>Grand Total:</b>
-  <b>RM ${Number(order.finalTotal || 0).toFixed(2)}</b>
-</div>
-
-      </tr>
-    `;
-  }).join("");
 
 const proofs = (order.proofs || []).map((p, idx) => {
   return `<li>
@@ -695,6 +686,12 @@ const receiptLink = order.receipt?.pdfFileId
         <tbody>${itemsRows}</tbody>
       </table>
     </div>
+    
+    <div class="rowBetween" style="margin-top:12px">
+  <b>Grand Total:</b>
+  <b>RM ${Number(order.finalTotal || 0).toFixed(2)}</b>
+</div>
+
 
     <div class="grid2" style="margin-top:12px">
       <div class="formRow">
