@@ -596,3 +596,69 @@ label{font-size:13px;color:var(--muted)}
 .table td{
   vertical-align: top;
 }
+
+/* ===== Mobile Header Optimization ===== */
+@media (max-width: 600px){
+
+  .topbar{
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  /* Brand row */
+  .brand{
+    gap: 10px;
+  }
+
+  .brandTitle{
+    font-size: 14px;
+    line-height: 1.2;
+  }
+
+  .brandSub{
+    font-size: 11px;
+  }
+
+  /* Make logo smaller on mobile */
+  .logo{
+    height: 42px;
+  }
+
+  /* Right-side actions move to second row */
+  .hdrRight,
+  .topActions{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  /* Environment pill becomes compact */
+  .hdrMeta{
+    padding: 6px 8px;
+    min-width: unset;
+  }
+
+  .hdrMetaTop{
+    font-size: 10px;
+  }
+
+  .hdrMetaVal{
+    font-size: 12px;
+  }
+
+  /* Launch button becomes full-height but compact */
+  .topActions .btn.gold{
+    padding: 10px 14px;
+    font-size: 13px;
+    border-radius: 12px;
+  }
+
+  /* Search input becomes full width */
+  .searchWrap{
+    min-width: 0;
+    width: 100%;
+  }
+}
