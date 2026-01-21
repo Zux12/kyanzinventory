@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>KYANZ App</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body class="bg">
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <img src="/assets/logo.png" class="logo" alt="KYANZ" />
+        <div class="brandText">
+          <div class="brandTitle">KYANZ App</div>
+          <div class="brandSub" id="whoami">Not logged in</div>
+        </div>
+      </div>
+
+      <div class="topActions">
+        <input id="globalSearch" class="input" placeholder="Search phone/email/receipt..." />
+        <button id="btnLogout" class="btn">Logout</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar" id="tabs"></aside>
+
+      <section class="content">
+        <!-- LOGIN -->
+        <div class="card" id="viewLogin">
+          <h2>Login</h2>
+          <p class="muted">Use your booth account (password is same as username for now).</p>
+
+          <div class="formRow">
+            <label>Username</label>
+            <input id="loginUser" class="input" placeholder="promoter1 / inventory1 / cashier1 / admin" />
+          </div>
+
+          <div class="formRow">
+            <label>Password</label>
+            <input id="loginPass" class="input" type="password" placeholder="same as username" />
+          </div>
+
+          <button id="btnLogin" class="btn gold">Login</button>
+          <div id="loginMsg" class="msg"></div>
+        </div>
+
+        <!-- PROMOTER: New Order -->
+        <div class="card hidden" id="viewNewOrder">
+          <h2>New Order (Block Stock)</h2>
+
+          <div class="grid2">
+            <div class="formRow">
+              <label>Customer Name</label>
+              <input id="custName" class="input" />
+            </div>
+            <div class="formRow">
+              <label>Phone (Primary Lookup)</label>
+              <input id="custPhone" class="input" />
+            </div>
+            <div class="formRow">
+              <label>Email (Optional)</label>
+              <input id="custEmail" class="input" />
+            </div>
+            <div class="formRow">
+              <label>Bundle/Override Total (Optional)</label>
+              <input id="overrideTotal" class="input" type="number" step="0.01" placeholder="Leave empty for normal total" />
+            </div>
+          </div>
+
+          <h3>Items</h3>
+          <div id="productPicker" class="productPicker"></div>
+
+          <div class="actions">
+            <button id="btnSaveOrder" class="btn gold">Save Order & Block Stock</button>
+            <div id="orderMsg" class="msg"></div>
+          </div>
+        </div>
+
+        <!-- ORDERS -->
+        <div class="card hidden" id="viewOrders">
+          <div class="rowBetween">
+            <h2>Orders</h2>
+            <select id="orderStatusFilter" class="input small">
+              <option value="">All</option>
+              <option value="reserved">Reserved</option>
+              <option value="paid">Paid</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div id="ordersTable"></div>
+        </div>
+
+        <!-- INVENTORY -->
+        <div class="card hidden" id="viewInventory">
+          <div class="rowBetween">
+            <h2>Inventory</h2>
+            <button id="btnRefreshProducts" class="btn">Refresh</button>
+          </div>
+
+          <div class="grid2">
+            <div class="card inner">
+              <h3>Add Perfume</h3>
+              <div class="formRow">
+                <label>Name</label>
+                <input id="newProdName" class="input" />
+              </div>
+              <div class="formRow">
+                <label>Stock</label>
+                <input id="newProdStock" class="input" type="number" />
+              </div>
+              <div class="formRow">
+                <label>Base Price (Optional)</label>
+                <input id="newProdPrice" class="input" type="number" step="0.01" />
+              </div>
+              <button id="btnAddProduct" class="btn gold">Add</button>
+              <div id="invMsg" class="msg"></div>
+            </div>
+
+            <div class="card inner">
+              <h3>Products</h3>
+              <div id="productsTable"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CASHIER CHECKOUT -->
+        <div class="card hidden" id="viewCheckout">
+          <h2>Cashier Checkout</h2>
+          <p class="muted">Search by phone or email in the top search box, then open the order.</p>
+
+          <div id="checkoutPanel" class="checkoutPanel">
+            <div class="muted">Select an order to checkout.</div>
+          </div>
+        </div>
+
+        <!-- AUDIT -->
+        <div class="card hidden" id="viewAudit">
+          <div class="rowBetween">
+            <h2>Audit Log</h2>
+            <button id="btnRefreshAudit" class="btn">Refresh</button>
+          </div>
+          <div id="auditTable"></div>
+        </div>
+
+        <!-- END OF DAY -->
+        <div class="card hidden" id="viewEndOfDay">
+          <h2>End of Day</h2>
+          <p class="muted">This will cancel all unpaid (reserved) orders and return stock.</p>
+          <button id="btnEndOfDay" class="btn danger">Cancel All Unpaid Orders</button>
+          <div id="eodMsg" class="msg"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>© KYANZ</span>
+    </footer>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
