@@ -573,12 +573,14 @@ app.post("/api/orders/:id/cancel", requireAuth, requireRole("cashier", "admin"),
 // Upload proof(s) (cashier/admin)
 
 app.post("/api/orders/:id/proofs", requireAuth, requireRole("cashier", "admin"), upload.array("files", 10), async (req, res) => {
-  try {
-if (!gfsBucket) {
+  if (!gfsBucket) {
   return res.status(503).json({
     msg: "File storage not ready. Please retry."
   });
 }
+  
+  try {
+
 
 
     const id = req.params.id;
@@ -671,13 +673,15 @@ app.get("/api/files/:fileId", requireAuth, async (req, res) => {
 
 
 app.post("/api/orders/:id/pay", requireAuth, requireRole("cashier", "admin"), async (req, res) => {
-  try {
 
-    if (!gfsBucket) {
+      if (!gfsBucket) {
   return res.status(503).json({
     msg: "Receipt storage not ready. Please retry."
   });
 }
+  try {
+
+
     const id = req.params.id;
     const { method } = req.body || {};
     const allowed = ["cash", "card", "qr", "transfer", "credit card", "cheque"];
