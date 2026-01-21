@@ -328,3 +328,45 @@ label{font-size:13px;color:var(--muted)}
 @keyframes splashOut{
   to { opacity: 0; visibility: hidden; }
 }
+
+/* ===== Splash Loader ===== */
+.splash-loader{
+  margin-top: 26px;
+  text-align: center;
+}
+
+.splash-message{
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: rgba(168,176,197,0.9);
+  margin-bottom: 10px;
+  min-height: 18px;
+}
+
+.splash-progress{
+  width: 220px;
+  height: 6px;
+  margin: 0 auto;
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.splash-bar{
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(
+    90deg,
+    rgba(215,177,90,0.6),
+    rgba(242,209,127,1)
+  );
+  border-radius: 999px;
+  transition: width 0.18s ease;
+}
+
+.splash-percent{
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(233,238,252,0.85);
+  letter-spacing: 0.18em;
+}
