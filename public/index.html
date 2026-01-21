@@ -7,6 +7,22 @@
   <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body class="bg">
+
+    <!-- Splash Intro -->
+  <div id="splash" class="splash">
+    <div class="splash-inner">
+      <div class="splash-top">WELCOME TO</div>
+
+      <div class="splash-logoWrap">
+        <img src="/assets/logo.png" alt="KYANZ" class="splash-logo" />
+      </div>
+
+      <div class="splash-bottom">KYANZ</div>
+      <div class="splash-sub">Exhibition System</div>
+    </div>
+  </div>
+
+  
   <div class="shell">
     <header class="topbar">
       <div class="brand">
@@ -50,5 +66,22 @@
       <span>© KYANZ</span>
     </footer>
   </div>
+
+  <script>
+  (function () {
+    const splash = document.getElementById("splash");
+    if (!splash) return;
+
+    // Total intro duration (ms)
+    const DURATION = 3200;
+
+    // After animation finishes, fade out and remove
+    setTimeout(() => {
+      splash.classList.add("is-out");
+      setTimeout(() => splash.remove(), 700);
+    }, DURATION);
+  })();
+</script>
+
 </body>
 </html>
