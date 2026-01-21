@@ -432,7 +432,10 @@ app.post("/api/orders", requireAuth, requireRole("promoter", "admin"), async (re
 });
 
 // Update order (cashier/admin) - allows edit items/prices before payment
-app.patch("/api/orders/:id", requireAuth, requireRole("cashier", "admin"), async (req, res) => {
+
+app.patch("/api/orders/:id", requireAuth, requireRole("promoter", "cashier", "admin"), async (req, res) => {
+
+  
   const session = await mongoose.startSession();
   session.startTransaction();
 
