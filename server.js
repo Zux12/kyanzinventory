@@ -728,7 +728,7 @@ app.post("/api/orders/:id/pay", requireAuth, requireRole("cashier", "admin"), as
     doc.fontSize(14).text(`Final Total: RM${Number(order.finalTotal).toFixed(2)}`, { align: "right" });
     doc.moveDown();
 
-    doc.fontSize(10).text("Thank you for your purchase!", reminding = false, { align: "center" });
+doc.fontSize(10).text("Thank you for your purchase!", { align: "center" });
     doc.end();
 
     const pdfBuffer = await new Promise((resolve) => {
