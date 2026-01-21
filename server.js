@@ -831,7 +831,6 @@ async function start() {
   }
 
   await mongoose.connect(MONGO_URI);
- note
   initGridFS();
 
   console.log("MongoDB connected");
