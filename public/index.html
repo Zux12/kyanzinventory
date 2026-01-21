@@ -19,6 +19,15 @@
 
       <div class="splash-bottom">KYANZ</div>
       <div class="splash-sub">Exhibition System</div>
+
+      <div class="splash-loader">
+  <div class="splash-message" id="splashMessage">Initializing system…</div>
+  <div class="splash-progress">
+    <div class="splash-bar" id="splashBar"></div>
+  </div>
+  <div class="splash-percent" id="splashPercent">0%</div>
+</div>
+
     </div>
   </div>
 
@@ -67,19 +76,52 @@
     </footer>
   </div>
 
-  <script>
+ <script>
   (function () {
     const splash = document.getElementById("splash");
     if (!splash) return;
 
-    // Total intro duration (ms)
-    const DURATION = 10000;
+    const percentEl = document.getElementById("splashPercent");
+    const barEl = document.getElementById("splashBar");
+    const msgEl = document.getElementById("splashMessage");
 
-    // After animation finishes, fade out and remove
-    setTimeout(() => {
-      splash.classList.add("is-out");
-      setTimeout(() => splash.remove(), 700);
-    }, DURATION);
+    const messages = [
+      "Initializing KYANZ system…",
+      "Loading inventory data…",
+      "Calculating stock levels…",
+      "Syncing sales modules…",
+      "Preparing checkout interface…",
+      "Finalizing system startup…"
+    ];
+
+    let percent = 0;
+    let msgIndex = 0;
+
+    const INTERVAL = 70;        // speed of % increment
+    const HOLD_AT_100 = 1200;   // how long to stay at 100% before fade out
+
+    const timer = setInterval(() => {
+      percent += 1;
+      if (percent > 100) percent = 100;
+
+      percentEl.textContent = percent + "%";
+      barEl.style.width = percent + "%";
+
+      // change message every ~18%
+      if (percent % 18 === 0 && msgIndex < messages.length - 1) {
+        msgIndex++;
+        msgEl.textContent = messages[msgIndex];
+      }
+
+      if (percent >= 100) {
+        clearInterval(timer);
+
+        setTimeout(() => {
+          splash.classList.add("is-out");
+          setTimeout(() => splash.remove(), 1200);
+        }, HOLD_AT_100);
+      }
+    }, INTERVAL);
   })();
 </script>
 
