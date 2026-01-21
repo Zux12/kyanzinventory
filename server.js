@@ -122,9 +122,17 @@ const AuditLog = mongoose.model("AuditLog", auditSchema);
 let gfsBucket = null;
 
 function initGridFS() {
-  const db = mongoose.connection.db;
-  gfsBucket = new mongoose.mongo.GridFSBucket(db, { bucketName: "uploads" });
+  if (!mongoose.connection.db) {
+    console.error("GridFS init failed: DB not ready");
+    return;
+  }
+  gfsBucket = new mongoose.mongo.GridFSBucket(
+    mongoose.connection.db,
+    { bucketName: "uploads" }
+  );
+  console.log("GridFS initialized");
 }
+
 
 // Multer memory storage -> stream to GridFS
 const upload = multer({
@@ -216,6 +224,8 @@ async function ensureSeedUsers() {
 // =======================
 // Routes: health + auth
 // =======================
+
+
 app.get("/api/ping", (_, res) => res.json({ ok: true, app: "kyanz" }));
 
 app.post("/api/auth/login", async (req, res) => {
@@ -564,10 +574,24 @@ app.post("/api/orders/:id/cancel", requireAuth, requireRole("cashier", "admin"),
 });
 
 // Upload proof(s) (cashier/admin)
+
+if (!gfsBucket) {
+  return res.status(503).json({
+    msg: "File storage not ready. Please retry in a moment."
+  });
+}
+
 app.post("/api/orders/:id/proofs", requireAuth, requireRole("cashier", "admin"), upload.array("files", 10), async (req, res) => {
   try {
+    if (!gfsBucket) {
+      return res.status(503).json({
+        msg: "File storage not ready. Please retry."
+      });
+    }
+
     const id = req.params.id;
     const order = await Order.findById(id);
+
     if (!order) return res.status(404).json({ msg: "Order not found" });
 
     if (order.status !== "reserved" && order.status !== "paid") {
@@ -651,6 +675,13 @@ app.get("/api/files/:fileId", requireAuth, async (req, res) => {
 });
 
 // Mark paid -> generate receipt no + PDF (cashier/admin)
+
+if (!gfsBucket) {
+  return res.status(503).json({
+    msg: "Receipt storage not ready. Please retry."
+  });
+}
+
 app.post("/api/orders/:id/pay", requireAuth, requireRole("cashier", "admin"), async (req, res) => {
   try {
     const id = req.params.id;
