@@ -10,17 +10,25 @@
   <div class="shell">
     <header class="topbar">
       <div class="brand">
-        <img src="/assets/logo.png" class="logo" alt="KYANZ" />
-        <div class="brandText">
-          <div class="brandTitle">KYANZ App</div>
-          <div class="brandSub" id="whoami">Not logged in</div>
-        </div>
-      </div>
+  <img src="/assets/logo.png" class="logo" alt="KYANZ" />
+  <div class="brandText">
+    <div class="brandTitle">KYANZ Exhibition Console</div>
+    <div class="brandSub">
+      <span id="whoami" class="pill">Not logged in</span>
+      <span class="sepDot">•</span>
+      <span class="muted smallcaps">Production</span>
+    </div>
+  </div>
+</div>
 
-      <div class="topActions">
-        <input id="globalSearch" class="input" placeholder="Search phone/email/receipt..." />
-        <button id="btnLogout" class="btn">Logout</button>
-      </div>
+<div class="topActions">
+  <div class="searchWrap">
+    <span class="searchIcon">⌕</span>
+    <input id="globalSearch" class="input searchInput" placeholder="Search phone / email / receipt…" />
+  </div>
+  <button id="btnLogout" class="btn">Logout</button>
+</div>
+
     </header>
 
     <main class="layout">
@@ -84,9 +92,13 @@
         </div>
 
         <!-- ORDERS -->
-        <div class="card hidden" id="viewOrders">
-          <div class="rowBetween">
-            <h2>Orders</h2>
+<div class="card hidden moduleCard" id="viewOrders">
+  <div class="moduleHdr">
+    <div>
+      <h2>Orders</h2>
+      <div class="moduleSub">Search, open, edit, checkout</div>
+    </div>
+
             <select id="orderStatusFilter" class="input small">
               <option value="">All</option>
               <option value="reserved">Reserved</option>
