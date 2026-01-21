@@ -303,6 +303,8 @@ function renderProductPickerPrefilled() {
       } else {
         delete SELECTED[p._id];
       }
+
+        updatePromoterTotal(); // ✅ add this
     }
 
     minus.onclick = () => {
