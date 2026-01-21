@@ -121,17 +121,14 @@ const AuditLog = mongoose.model("AuditLog", auditSchema);
 // =======================
 let gfsBucket = null;
 
-function initGridFS() {
-  if (!mongoose.connection.db) {
-    console.error("GridFS init failed: DB not ready");
-    return;
-  }
+mongoose.connection.once("open", () => {
   gfsBucket = new mongoose.mongo.GridFSBucket(
     mongoose.connection.db,
     { bucketName: "uploads" }
   );
-  console.log("GridFS initialized");
-}
+  console.log("✅ GridFS initialized");
+});
+
 
 
 // Multer memory storage -> stream to GridFS
@@ -849,8 +846,11 @@ app.get("/api/audit", requireAuth, async (req, res) => {
 
 // SPA fallback
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  if (!res.headersSent) {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+  }
 });
+
 
 // =======================
 // Start
@@ -862,7 +862,7 @@ async function start() {
   }
 
   await mongoose.connect(MONGO_URI);
-  initGridFS();
+
 
   console.log("MongoDB connected");
   await ensureSeedUsers();
