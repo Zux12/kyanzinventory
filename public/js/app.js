@@ -461,9 +461,10 @@ function renderCheckout(order) {
     return `<li><a href="${apiUrl(`/api/files/${p.fileId}`)}" target="_blank">${p.filename}</a> <span class="muted">(${Math.round((p.size||0)/1024)} KB)</span></li>`;
   }).join("");
 
-  const receiptLink = order.receipt?.pdfFileId
-    ? `<a class="btn" target="_blank" href="${apiUrl(`/api/files/${order.receipt.pdfFileId}`)}">View Receipt PDF</a>`
-    : "";
+const receiptLink = order.receipt?.pdfFileId
+  ? `<button class="btn" id="btnViewReceipt">View Receipt PDF</button>`
+  : "";
+
 
   const canEdit = order.status === "reserved";
   const canPay = order.status === "reserved";
@@ -520,7 +521,12 @@ function renderCheckout(order) {
       <ul>${proofs || "<li class='muted'>None</li>"}</ul>
     </div>
   `;
+const btnViewReceipt = document.getElementById("btnViewReceipt");
+if (btnViewReceipt) {
+  btnViewReceipt.onclick = () => viewProtectedPdf(order.receipt.pdfFileId);
+}
 
+  
   $("btnSaveEdits").onclick = () => saveCheckoutEdits(order._id);
   $("btnMarkPaid").onclick = () => markPaid(order._id);
   $("btnCancelOrder").onclick = () => cancelOrder(order._id);
@@ -667,5 +673,33 @@ async function endOfDayCancel() {
     setMsg(msg, `⛔ ${e.message}`, false);
   }
 }
+
+async function viewProtectedPdf(fileId) {
+  try {
+    const token = getToken();
+    if (!token) {
+      alert("Missing token. Please login again.");
+      return;
+    }
+
+    const res = await fetch(apiUrl(`/api/files/${fileId}`), {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      throw new Error(txt || "Failed to load PDF");
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank", "noopener,noreferrer");
+    // optional: revoke later
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  } catch (e) {
+    alert(`Cannot open PDF: ${e.message}`);
+  }
+}
+
 
 boot();
