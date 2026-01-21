@@ -572,19 +572,14 @@ app.post("/api/orders/:id/cancel", requireAuth, requireRole("cashier", "admin"),
 
 // Upload proof(s) (cashier/admin)
 
+app.post("/api/orders/:id/proofs", requireAuth, requireRole("cashier", "admin"), upload.array("files", 10), async (req, res) => {
+  try {
 if (!gfsBucket) {
   return res.status(503).json({
-    msg: "File storage not ready. Please retry in a moment."
+    msg: "File storage not ready. Please retry."
   });
 }
 
-app.post("/api/orders/:id/proofs", requireAuth, requireRole("cashier", "admin"), upload.array("files", 10), async (req, res) => {
-  try {
-    if (!gfsBucket) {
-      return res.status(503).json({
-        msg: "File storage not ready. Please retry."
-      });
-    }
 
     const id = req.params.id;
     const order = await Order.findById(id);
@@ -673,14 +668,16 @@ app.get("/api/files/:fileId", requireAuth, async (req, res) => {
 
 // Mark paid -> generate receipt no + PDF (cashier/admin)
 
-if (!gfsBucket) {
+
+
+app.post("/api/orders/:id/pay", requireAuth, requireRole("cashier", "admin"), async (req, res) => {
+  try {
+
+    if (!gfsBucket) {
   return res.status(503).json({
     msg: "Receipt storage not ready. Please retry."
   });
 }
-
-app.post("/api/orders/:id/pay", requireAuth, requireRole("cashier", "admin"), async (req, res) => {
-  try {
     const id = req.params.id;
     const { method } = req.body || {};
     const allowed = ["cash", "card", "qr", "transfer", "credit card", "cheque"];
