@@ -40,8 +40,18 @@ a{color:inherit;text-decoration:none}
   box-shadow:var(--shadow);
 }
 
-.brand{display:flex;align-items:center;gap:12px}
-.logo{width:46px;height:46px;object-fit:contain;border-radius:12px;background:rgba(255,255,255,0.04);padding:8px}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{
+  height:52px;          /* main control */
+  width:auto;
+  object-fit:contain;
+  padding:0;
+  background:none;
+  border-radius:0;
+}
+
+
+
 .brandTitle{font-weight:800;letter-spacing:0.4px}
 .brandSub{color:var(--muted);font-size:13px}
 
