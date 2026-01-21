@@ -457,9 +457,15 @@ function renderCheckout(order) {
     `;
   }).join("");
 
-  const proofs = (order.proofs || []).map(p => {
-    return `<li><a href="${apiUrl(`/api/files/${p.fileId}`)}" target="_blank">${p.filename}</a> <span class="muted">(${Math.round((p.size||0)/1024)} KB)</span></li>`;
-  }).join("");
+const proofs = (order.proofs || []).map((p, idx) => {
+  return `<li>
+    <button class="btn" data-proof="${p.fileId}">
+      View ${p.filename}
+    </button>
+    <span class="muted">(${Math.round((p.size || 0) / 1024)} KB)</span>
+  </li>`;
+}).join("");
+
 
 const receiptLink = order.receipt?.pdfFileId
   ? `<button class="btn" id="btnViewReceipt">View Receipt PDF</button>`
@@ -524,7 +530,16 @@ const receiptLink = order.receipt?.pdfFileId
 const btnViewReceipt = document.getElementById("btnViewReceipt");
 if (btnViewReceipt) {
   btnViewReceipt.onclick = () => viewProtectedPdf(order.receipt.pdfFileId);
+
+  
 }
+
+  document.querySelectorAll("[data-proof]").forEach(btn => {
+  btn.onclick = () => {
+    const fileId = btn.getAttribute("data-proof");
+    viewProtectedPdf(fileId);
+  };
+});
 
   
   $("btnSaveEdits").onclick = () => saveCheckoutEdits(order._id);
