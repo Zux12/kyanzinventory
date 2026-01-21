@@ -209,6 +209,8 @@ function renderProductPicker() {
     // default from basePrice if provided
     if (p.basePrice) price.value = String(p.basePrice);
 
+    
+    
     function syncSelected() {
       const q = Number(qty.value) || 0;
       const pr = Number(price.value) || 0;
@@ -218,6 +220,7 @@ function renderProductPicker() {
       } else {
         delete SELECTED[p._id];
       }
+        updatePromoterTotal(); // ✅ added
     }
 
     minus.onclick = () => {
@@ -376,6 +379,14 @@ async function saveOrderEdits(orderId) {
   }
 }
 
+function updatePromoterTotal() {
+  let total = 0;
+  Object.values(SELECTED).forEach(v => {
+    total += (Number(v.qty) || 0) * (Number(v.unitPrice) || 0);
+  });
+  const el = document.getElementById("promoterTotal");
+  if (el) el.textContent = `RM ${total.toFixed(2)}`;
+}
 
 async function saveOrder() {
   const msg = $("orderMsg");
@@ -625,7 +636,18 @@ function renderCheckout(order) {
       <tr>
         <td>${it.name}</td>
         <td><input class="input small" data-qty="${it.productId}" type="number" value="${it.qty}" /></td>
-        <td><input class="input small" data-up="${it.productId}" type="number" step="0.01" value="${it.unitPrice}" /></td>
+<tr>
+  <td>${it.name}</td>
+  <td><input class="input small" data-qty="${it.productId}" type="number" value="${it.qty}" /></td>
+  <td><input class="input small" data-up="${it.productId}" type="number" step="0.01" value="${it.unitPrice}" /></td>
+  <td><b>RM ${(it.qty * it.unitPrice).toFixed(2)}</b></td>
+</tr>
+
+<div class="rowBetween" style="margin-top:12px">
+  <b>Grand Total:</b>
+  <b>RM ${Number(order.finalTotal || 0).toFixed(2)}</b>
+</div>
+
       </tr>
     `;
   }).join("");
@@ -660,7 +682,14 @@ const receiptLink = order.receipt?.pdfFileId
 
     <div style="margin-top:12px">
       <table class="table">
-        <thead><tr><th>Item</th><th>Qty</th><th>Unit Price</th></tr></thead>
+<thead>
+  <tr>
+    <th>Item</th>
+    <th>Qty</th>
+    <th>Unit Price</th>
+    <th>Total</th>
+  </tr>
+</thead>
         <tbody>${itemsRows}</tbody>
       </table>
     </div>
