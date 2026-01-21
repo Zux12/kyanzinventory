@@ -606,21 +606,20 @@ app.post("/api/orders/:id/proofs", requireAuth, requireRole("cashier", "admin"),
 
       const filename = `proof_${id}_${Date.now()}_${f.originalname}`.replace(/\s+/g, "_");
 
-      const uploadStream = gfsBucket.openUploadStream(filename, {
-        contentType: f.mimetype,
-        metadata: {
-          orderId: id,
-          kind: "proof",
-          uploadedBy: req.user.username
-        }
-      });
+   const uploadStream = gfsBucket.openUploadStream(filename, {
+  contentType: f.mimetype,
+  metadata: { orderId: id, kind: "proof", uploadedBy: req.user.username }
+});
 
-      uploadStream.end(f.buffer);
+const fileId = uploadStream.id; // ✅
 
-      const fileId = await new Promise((resolve, reject) => {
-        uploadStream.on("finish", (file) => resolve(file._id));
-        uploadStream.on("error", reject);
-      });
+uploadStream.end(f.buffer);
+
+await new Promise((resolve, reject) => {
+  uploadStream.on("finish", resolve);
+  uploadStream.on("error", reject);
+});
+
 
       const meta = {
         fileId,
@@ -741,22 +740,25 @@ doc.fontSize(10).text("Thank you for your purchase!", { align: "center" });
 
     const filename = `receipt_${receiptNo}.pdf`;
 
-    const uploadStream = gfsBucket.openUploadStream(filename, {
-      contentType: "application/pdf",
-      metadata: {
-        orderId: id,
-        kind: "receipt",
-        receiptNo,
-        createdBy: req.user.username
-      }
-    });
+   const uploadStream = gfsBucket.openUploadStream(filename, {
+  contentType: "application/pdf",
+  metadata: {
+    orderId: id,
+    kind: "receipt",
+    receiptNo,
+    createdBy: req.user.username
+  }
+});
 
-    uploadStream.end(pdfBuffer);
+const pdfFileId = uploadStream.id; // ✅ always available
 
-    const pdfFileId = await new Promise((resolve, reject) => {
-      uploadStream.on("finish", (file) => resolve(file._id));
-      uploadStream.on("error", reject);
-    });
+uploadStream.end(pdfBuffer);
+
+await new Promise((resolve, reject) => {
+  uploadStream.on("finish", resolve);
+  uploadStream.on("error", reject);
+});
+
 
     // Save payment & receipt
     order.status = "paid";
