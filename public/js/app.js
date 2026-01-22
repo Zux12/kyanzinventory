@@ -16,10 +16,40 @@ let PRODUCTS = [];
 let SELECTED = {}; // productId -> {qty, unitPrice}
 let OPEN_CHECKOUT_ORDER = null;
 
+let CURRENT_VIEW = "login";
+
 function showView(name) {
+  CURRENT_VIEW = name;
   Object.values(views).forEach(v => v.classList.add("hidden"));
   views[name].classList.remove("hidden");
 }
+
+function startInventoryAutoRefresh() {
+  setInterval(async () => {
+    try {
+      // only inventory role (or admin if you want)
+      if (!ME || (ME.role !== "inventory" && ME.role !== "admin")) return;
+
+      // only when Inventory view is currently shown
+      if (CURRENT_VIEW !== "inventory") return;
+
+      // if user is editing (focused on any input inside inventory panel), skip
+      const inv = document.getElementById("viewInventory");
+      const active = document.activeElement;
+      if (inv && active && inv.contains(active) && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName)) {
+        return;
+      }
+
+      // refresh products safely
+      await loadProducts();
+      renderProductsTable();
+    } catch (e) {
+      // silent fail to avoid annoying users
+      console.warn("Inventory auto-refresh skipped:", e.message);
+    }
+  }, 8000); // every 8 seconds (safe)
+}
+
 
 function setMsg(el, text, ok = true) {
   el.textContent = text || "";
@@ -131,6 +161,7 @@ async function boot() {
     ME = me;
     $("whoami").textContent = `${me.username} • ${me.role}`;
     renderTabs(me.role);
+    startInventoryAutoRefresh();
     views.login.classList.add("hidden");
   } catch {
     // Not logged in
