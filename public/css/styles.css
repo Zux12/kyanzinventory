@@ -662,3 +662,12 @@ label{font-size:13px;color:var(--muted)}
     width: 100%;
   }
 }
+
+.field textarea{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.12);
+  font: inherit;
+  resize: vertical;
+}
