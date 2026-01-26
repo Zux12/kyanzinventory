@@ -7,6 +7,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const PDFDocument = require("pdfkit");
+const crypto = require("crypto");
 require("dotenv").config();
 
 const app = express();
@@ -56,6 +57,8 @@ const orderSchema = new mongoose.Schema(
     phone: { type: String, required: true, index: true },
     email: { type: String, default: "", index: true },
     remarks: { type: String, default: "" },
+    receiptShareToken: { type: String, default: "", index: true },
+
 
 
     createdBy: { type: String, required: true, index: true }, // promoter username
@@ -970,6 +973,32 @@ app.post("/api/endofday/cancel-unpaid", requireAuth, requireRole("cashier", "adm
     session.endSession();
   }
 });
+
+app.get("/r/:token", async (req, res) => {
+  try {
+    const token = String(req.params.token || "");
+    const order = await Order.findOne({ receiptShareToken: token });
+
+    if (!order || !order.receipt || !order.receipt.pdfFileId) {
+      return res.status(404).send("Receipt not found");
+    }
+
+    const fileId = order.receipt.pdfFileId;
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename="KYANZ_Receipt_${order.receipt.receiptNo || "receipt"}.pdf"`
+    );
+
+    const dl = gfs.openDownloadStream(fileId);
+    dl.on("error", () => res.status(404).send("Receipt file missing"));
+    dl.pipe(res);
+  } catch (e) {
+    res.status(500).send("Server error");
+  }
+});
+
 
 // Audit log (everyone can view; can restrict later)
 app.get("/api/audit", requireAuth, async (req, res) => {
