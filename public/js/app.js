@@ -758,6 +758,12 @@ const receiptLink = order.receipt?.pdfFileId
       </div>
     </div>
 
+    <div class="formRow" style="grid-column: 1 / -1;">
+  <label>Remarks (Promoter ↔ Cashier)</label>
+  <textarea id="chkRemarks" class="input" rows="3" ${canEdit ? "" : "disabled"}>${order.remarks || ""}</textarea>
+</div>
+
+
     <div class="actions">
       <button class="btn gold" id="btnSaveEdits" ${canEdit ? "" : "disabled"}>Save Edits</button>
       <button class="btn gold" id="btnMarkPaid" ${canPay ? "" : "disabled"}>Mark Paid & Generate Receipt</button>
@@ -811,16 +817,20 @@ async function saveCheckoutEdits(orderId) {
     }
 
     const overrideRaw = $("chkOverride").value;
+    const remarks = $("chkRemarks") ? $("chkRemarks").value.trim() : "";
+
 
     const updated = await apiFetch(`/api/orders/${orderId}`, {
       method: "PATCH",
-      body: JSON.stringify({
-        customerName: OPEN_CHECKOUT_ORDER.customerName,
-        phone: OPEN_CHECKOUT_ORDER.phone,
-        email: OPEN_CHECKOUT_ORDER.email,
-        items,
-        overrideTotal: overrideRaw === "" ? "" : Number(overrideRaw)
-      })
+body: JSON.stringify({
+  customerName: OPEN_CHECKOUT_ORDER.customerName,
+  phone: OPEN_CHECKOUT_ORDER.phone,
+  email: OPEN_CHECKOUT_ORDER.email,
+  items,
+  overrideTotal: overrideRaw === "" ? "" : Number(overrideRaw),
+  remarks
+})
+
     });
 
     setMsg(msg, "✅ Saved edits", true);
