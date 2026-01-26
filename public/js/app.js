@@ -700,9 +700,15 @@ const proofs = (order.proofs || []).map((p, idx) => {
 }).join("");
 
 
+const shareUrl = order.receiptShareToken ? `${location.origin}/r/${order.receiptShareToken}` : "";
+
 const receiptLink = order.receipt?.pdfFileId
-  ? `<button class="btn" id="btnViewReceipt">View Receipt PDF</button>`
+  ? `
+    <button class="btn" id="btnViewReceipt">View Receipt PDF</button>
+    <button class="btn gold" id="btnWhatsAppReceipt">Send via WhatsApp</button>
+  `
   : "";
+
 
 
   const canEdit = order.status === "reserved";
@@ -785,6 +791,44 @@ if (btnViewReceipt) {
 
   
 }
+
+  const btnWhatsApp = document.getElementById("btnWhatsAppReceipt");
+if (btnWhatsApp) {
+  btnWhatsApp.onclick = () => {
+    const raw = String(order.phone || "").trim();
+
+    // Normalize for international use:
+    // +65xxxx -> 65xxxx
+    // 0065xxxx -> 65xxxx
+    // otherwise keep digits only
+    let p = raw.replace(/\s+/g, "");
+    if (p.startsWith("+")) p = p.slice(1);
+    if (p.startsWith("00")) p = p.slice(2);
+    p = p.replace(/[^\d]/g, "");
+
+    const shareUrl = order.receiptShareToken
+      ? `${location.origin}/r/${order.receiptShareToken}`
+      : "(receipt link unavailable)";
+
+    const msg =
+      `Hi ${order.customerName || ""} 😊\n\n` +
+      `Thank you for your purchase with KYANZ.\n` +
+      `Here is your receipt (PDF):\n${shareUrl}\n\n` +
+      `If you need anything, reply to us here.\n` +
+      `— KYANZ`;
+
+    // If phone looks international (doesn't start with 0 and long enough), open direct.
+    // Otherwise open WhatsApp with message only (chat picker) to avoid wrong country assumptions.
+    const looksIntl = p && !/^0/.test(p) && p.length >= 8;
+
+    const waUrl = looksIntl
+      ? `https://wa.me/${p}?text=${encodeURIComponent(msg)}`
+      : `https://wa.me/?text=${encodeURIComponent(msg + `\n\nCustomer phone: ${raw}`)}`;
+
+    window.open(waUrl, "_blank", "noopener,noreferrer");
+  };
+}
+
 
   document.querySelectorAll("[data-proof]").forEach(btn => {
   btn.onclick = () => {
