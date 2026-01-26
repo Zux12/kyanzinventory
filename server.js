@@ -721,6 +721,7 @@ app.post("/api/orders/:id/pay", requireAuth, requireRole("cashier", "admin"), as
     doc.text(`Customer: ${order.customerName}`);
     doc.text(`Phone: ${order.phone}`);
     if (order.email) doc.text(`Email: ${order.email}`);
+    if (order.remarks) doc.text(`Remarks: ${order.remarks}`);
     doc.moveDown();
 
     doc.text(`Promoter: ${order.createdBy}`);
