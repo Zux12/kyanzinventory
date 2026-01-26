@@ -55,6 +55,8 @@ const orderSchema = new mongoose.Schema(
     customerName: { type: String, required: true, index: true },
     phone: { type: String, required: true, index: true },
     email: { type: String, default: "", index: true },
+    remarks: { type: String, default: "" },
+
 
     createdBy: { type: String, required: true, index: true }, // promoter username
     status: { type: String, enum: ["reserved", "paid", "cancelled"], default: "reserved", index: true },
@@ -336,7 +338,9 @@ app.post("/api/orders", requireAuth, requireRole("promoter", "admin"), async (re
   session.startTransaction();
 
   try {
-    const { customerName, phone, email, items, overrideTotal } = req.body || {};
+
+    const { customerName, phone, email, items, overrideTotal, remarks } = req.body || {};
+
 
     if (!customerName || !phone) {
       await session.abortTransaction();
@@ -402,16 +406,18 @@ app.post("/api/orders", requireAuth, requireRole("promoter", "admin"), async (re
 
     const order = await Order.create(
       [
-        {
-          customerName: String(customerName).trim(),
-          phone: nPhone,
-          email: nEmail,
-          createdBy: req.user.username,
-          status: "reserved",
-          items: hydratedItems,
-          overrideTotal: overrideTotal === "" ? null : (overrideTotal ?? null),
-          finalTotal: totals.finalTotal
-        }
+{
+  customerName: String(customerName).trim(),
+  phone: nPhone,
+  email: nEmail,
+  remarks: String(remarks || "").trim(),
+  createdBy: req.user.username,
+  status: "reserved",
+  items: hydratedItems,
+  overrideTotal: overrideTotal === "" ? null : (overrideTotal ?? null),
+  finalTotal: totals.finalTotal
+}
+
       ],
       { session }
     );
@@ -451,7 +457,8 @@ app.patch("/api/orders/:id", requireAuth, requireRole("promoter", "cashier", "ad
       return res.status(409).json({ msg: "Only reserved orders can be edited" });
     }
 
-    const { customerName, phone, email, items, overrideTotal } = req.body || {};
+    const { customerName, phone, email, items, overrideTotal, remarks } = req.body || {};
+
 
     // Return previous stock then reserve new stock based on updated items
     for (const old of order.items) {
@@ -507,6 +514,7 @@ app.patch("/api/orders/:id", requireAuth, requireRole("promoter", "cashier", "ad
     order.customerName = customerName !== undefined ? String(customerName).trim() : order.customerName;
     order.phone = nPhone;
     order.email = nEmail;
+    order.remarks = remarks !== undefined ? String(remarks || "").trim() : order.remarks;
     order.items = hydratedItems;
     order.overrideTotal = overrideTotal === "" ? null : (overrideTotal ?? order.overrideTotal);
 
