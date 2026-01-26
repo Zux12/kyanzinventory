@@ -708,43 +708,172 @@ app.post("/api/orders/:id/pay", requireAuth, requireRole("cashier", "admin"), as
     const receiptNo = receiptNoFactory();
 
     // Generate PDF to buffer then stream to GridFS
-    const doc = new PDFDocument({ size: "A4", margin: 40 });
-    const chunks = [];
-    doc.on("data", (c) => chunks.push(c));
+const doc = new PDFDocument({ size: "A4", margin: 48 });
+const chunks = [];
+doc.on("data", (c) => chunks.push(c));
 
-    doc.fontSize(20).text("KYANZ Perfume Receipt", { align: "center" });
-    doc.moveDown();
-    doc.fontSize(12).text(`Receipt No: ${receiptNo}`);
-    doc.text(`Date: ${new Date().toLocaleString()}`);
-    doc.moveDown();
+// ---------- helpers ----------
+const money = (n) => `RM ${Number(n || 0).toFixed(2)}`;
+const hr = (y) => {
+  doc
+    .moveTo(48, y)
+    .lineTo(doc.page.width - 48, y)
+    .lineWidth(1)
+    .strokeColor("#E5E7EB")
+    .stroke();
+};
 
-    doc.text(`Customer: ${order.customerName}`);
-    doc.text(`Phone: ${order.phone}`);
-    if (order.email) doc.text(`Email: ${order.email}`);
-    doc.moveDown();
+// ---------- header (logo + title) ----------
+const logoPath = path.join(__dirname, "public", "assets", "logo.png");
+const startY = 48;
 
-    doc.text(`Promoter: ${order.createdBy}`);
-    doc.text(`Cashier: ${req.user.username}`);
-    doc.text(`Payment Method: ${payMethod.toUpperCase()}`);
-    if (order.remarks) doc.text(`Remarks: ${order.remarks}`);
-    doc.moveDown();
+// logo (safe)
+try {
+  doc.image(logoPath, 48, startY, { width: 64 });
+} catch (e) {
+  // ignore if logo missing
+}
 
-    doc.fontSize(12).text("Items:", { underline: true });
-    doc.moveDown(0.5);
+doc
+  .font("Helvetica-Bold")
+  .fontSize(18)
+  .fillColor("#111827")
+  .text("KYANZ Exhibition Receipt", 120, startY + 6);
 
-    order.items.forEach((it) => {
-      doc.text(`${it.name}  x${it.qty}  @ RM${Number(it.unitPrice).toFixed(2)}  = RM${Number(it.lineTotal).toFixed(2)}`);
-    });
+doc
+  .font("Helvetica")
+  .fontSize(10)
+  .fillColor("#6B7280")
+  .text("Official Receipt", 120, startY + 30);
 
-    doc.moveDown();
-    if (order.overrideTotal !== null && order.overrideTotal !== undefined) {
-      doc.text(`Bundle/Override Total: RM${Number(order.overrideTotal).toFixed(2)}`);
-    }
-    doc.fontSize(14).text(`Final Total: RM${Number(order.finalTotal).toFixed(2)}`, { align: "right" });
-    doc.moveDown();
+// right meta
+const rightX = doc.page.width - 48 - 220;
+doc
+  .font("Helvetica")
+  .fontSize(10)
+  .fillColor("#111827")
+  .text(`Receipt No: ${receiptNo}`, rightX, startY + 6, { width: 220, align: "right" })
+  .fillColor("#6B7280")
+  .text(`Date: ${new Date().toLocaleString()}`, rightX, startY + 22, { width: 220, align: "right" })
+  .text(`Order ID: ${order._id}`, rightX, startY + 38, { width: 220, align: "right" });
 
-doc.fontSize(10).text("Thank you for your purchase!", { align: "center" });
-    doc.end();
+hr(startY + 70);
+doc.moveDown(2);
+
+// ---------- panels ----------
+const panelTop = doc.y;
+const panelW = (doc.page.width - 48 * 2 - 16) / 2;
+const panelH = 104;
+
+const drawPanel = (x, y, title, lines) => {
+  doc
+    .roundedRect(x, y, panelW, panelH, 10)
+    .lineWidth(1)
+    .strokeColor("#E5E7EB")
+    .stroke();
+
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(10)
+    .fillColor("#111827")
+    .text(title, x + 12, y + 10);
+
+  let ly = y + 30;
+  doc.font("Helvetica").fontSize(10).fillColor("#111827");
+  lines.forEach((t) => {
+    doc.text(t, x + 12, ly, { width: panelW - 24 });
+    ly += 16;
+  });
+};
+
+drawPanel(48, panelTop, "Customer", [
+  `Name: ${order.customerName || "-"}`,
+  `Phone: ${order.phone || "-"}`,
+  `Email: ${order.email ? order.email : "-"}`
+]);
+
+// ✅ Remarks below payment method (as you requested)
+drawPanel(48 + panelW + 16, panelTop, "Payment", [
+  `Promoter: ${order.createdBy || "-"}`,
+  `Cashier: ${req.user.username || "-"}`,
+  `Payment Method: ${String(payMethod || "-").toUpperCase()}`,
+  `Remarks: ${order.remarks ? order.remarks : "-"}`
+]);
+
+doc.y = panelTop + panelH + 18;
+
+// ---------- items table ----------
+doc.font("Helvetica-Bold").fontSize(11).fillColor("#111827").text("Items");
+doc.moveDown(0.5);
+
+const tableX = 48;
+const tableW = doc.page.width - 96;
+
+const colItem = tableX;
+const colQty = tableX + tableW * 0.58;
+const colPrice = tableX + tableW * 0.70;
+const colTotal = tableX + tableW * 0.84;
+
+const headerY = doc.y;
+
+doc
+  .font("Helvetica-Bold")
+  .fontSize(10)
+  .fillColor("#6B7280")
+  .text("Item", colItem, headerY)
+  .text("Qty", colQty, headerY, { width: 40, align: "right" })
+  .text("Unit", colPrice, headerY, { width: 70, align: "right" })
+  .text("Total", colTotal, headerY, { width: 80, align: "right" });
+
+hr(headerY + 16);
+doc.moveDown(1);
+
+// rows
+doc.font("Helvetica").fontSize(10).fillColor("#111827");
+
+(order.items || []).forEach((it) => {
+  const lineY = doc.y;
+  const qty = Number(it.qty || 0);
+  const unit = Number(it.unitPrice || 0);
+  const lineTotal = qty * unit;
+
+  doc.text(it.name || "-", colItem, lineY, { width: (colQty - colItem) - 10 });
+  doc.text(String(qty), colQty, lineY, { width: 40, align: "right" });
+  doc.text(money(unit), colPrice, lineY, { width: 70, align: "right" });
+  doc.text(money(lineTotal), colTotal, lineY, { width: 80, align: "right" });
+
+  doc.moveDown(0.8);
+});
+
+hr(doc.y + 4);
+doc.moveDown(1);
+
+// totals
+const overrideShown = order.overrideTotal !== null && order.overrideTotal !== undefined;
+if (overrideShown) {
+  doc.font("Helvetica").fontSize(10).fillColor("#111827");
+  doc.text(`Bundle/Override Total: ${money(order.overrideTotal)}`, colTotal - 60, doc.y, { width: 140, align: "right" });
+  doc.moveDown(0.4);
+}
+
+doc.font("Helvetica-Bold").fontSize(12).fillColor("#111827");
+doc.text(`Grand Total: ${money(order.finalTotal)}`, colTotal - 60, doc.y, { width: 140, align: "right" });
+
+doc.moveDown(1.2);
+
+// footer
+hr(doc.y);
+doc.moveDown(0.8);
+
+doc
+  .font("Helvetica")
+  .fontSize(9)
+  .fillColor("#6B7280")
+  .text("Thank you for your purchase.", { align: "center" })
+  .text("This receipt is system-generated.", { align: "center" });
+
+doc.end();
+
 
     const pdfBuffer = await new Promise((resolve) => {
       doc.on("end", () => resolve(Buffer.concat(chunks)));
