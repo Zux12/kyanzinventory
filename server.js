@@ -913,6 +913,12 @@ await new Promise((resolve, reject) => {
     order.receipt.receiptNo = receiptNo;
     order.receipt.pdfFileId = pdfFileId;
 
+// ✅ create share token for public receipt link (only once)
+if (!order.receiptShareToken) {
+  order.receiptShareToken = crypto.randomBytes(16).toString("hex");
+}
+
+    
     await order.save();
 
     await audit(req.user.username, req.user.role, "ORDER_PAID_RECEIPT", "order", String(order._id), {
