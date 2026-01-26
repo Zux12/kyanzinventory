@@ -370,6 +370,8 @@ async function saveOrderEdits(orderId) {
     const phone = $("custPhone").value.trim();
     const email = $("custEmail").value.trim();
     const overrideTotalRaw = $("overrideTotal").value;
+    const remarks = $("remarks").value.trim();
+
 
     const items = Object.entries(SELECTED).map(([productId, v]) => ({
       productId,
@@ -377,13 +379,15 @@ async function saveOrderEdits(orderId) {
       unitPrice: v.unitPrice
     }));
 
-    const payload = {
-      customerName,
-      phone,
-      email,
-      items,
-      overrideTotal: overrideTotalRaw === "" ? "" : Number(overrideTotalRaw)
-    };
+  const payload = {
+  customerName,
+  phone,
+  email,
+  items,
+  overrideTotal: overrideTotalRaw === "" ? "" : Number(overrideTotalRaw),
+  remarks
+};
+
 
     const updated = await apiFetch(`/api/orders/${orderId}`, {
       method: "PATCH",
@@ -401,6 +405,8 @@ async function saveOrderEdits(orderId) {
     $("custPhone").value = "";
     $("custEmail").value = "";
     $("overrideTotal").value = "";
+    $("remarks").value = "";
+
     SELECTED = {};
     await loadProducts();
     renderProductPicker();
@@ -430,6 +436,8 @@ async function saveOrder() {
     const phone = $("custPhone").value.trim();
     const email = $("custEmail").value.trim();
     const overrideTotalRaw = $("overrideTotal").value;
+    const remarks = $("remarks").value.trim();
+
 
     const items = Object.entries(SELECTED).map(([productId, v]) => ({
       productId,
@@ -437,13 +445,15 @@ async function saveOrder() {
       unitPrice: v.unitPrice
     }));
 
-    const payload = {
-      customerName,
-      phone,
-      email,
-      items,
-      overrideTotal: overrideTotalRaw === "" ? "" : Number(overrideTotalRaw)
-    };
+const payload = {
+  customerName,
+  phone,
+  email,
+  items,
+  overrideTotal: overrideTotalRaw === "" ? "" : Number(overrideTotalRaw),
+  remarks
+};
+
 
     const order = await apiFetch("/api/orders", {
       method: "POST",
@@ -457,6 +467,8 @@ async function saveOrder() {
     $("custPhone").value = "";
     $("custEmail").value = "";
     $("overrideTotal").value = "";
+    $("remarks").value = "";
+
     await loadProducts();
     renderProductPicker();
   } catch (e) {
@@ -559,6 +571,8 @@ function bindOrdersActions(orders) {
     $("custPhone").value = o.phone || "";
     $("custEmail").value = o.email || "";
     $("overrideTotal").value = (o.overrideTotal ?? "");
+    $("remarks").value = (o.remarks || "");
+
 
     // prefill SELECTED items
     SELECTED = {};
