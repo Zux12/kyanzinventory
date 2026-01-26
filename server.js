@@ -989,21 +989,31 @@ app.get("/r/:token", async (req, res) => {
       return res.status(404).send("Receipt not found");
     }
 
-    const fileId = order.receipt.pdfFileId;
+    if (!gfsBucket) {
+      return res.status(503).send("Receipt storage not ready");
+    }
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
       `inline; filename="KYANZ_Receipt_${order.receipt.receiptNo || "receipt"}.pdf"`
     );
+    res.setHeader("Cache-Control", "no-store");
 
-    const dl = gfs.openDownloadStream(fileId);
-    dl.on("error", () => res.status(404).send("Receipt file missing"));
+    const dl = gfsBucket.openDownloadStream(order.receipt.pdfFileId);
+
+    dl.on("error", (err) => {
+      console.error("Receipt download error:", err);
+      if (!res.headersSent) res.status(404).send("Receipt file missing");
+    });
+
     dl.pipe(res);
   } catch (e) {
+    console.error("Public receipt error:", e);
     res.status(500).send("Server error");
   }
 });
+
 
 
 // Audit log (everyone can view; can restrict later)
