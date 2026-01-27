@@ -716,7 +716,7 @@ const chunks = [];
 doc.on("data", (c) => chunks.push(c));
 
 // ---------- helpers ----------
-const money = (n) => `RM ${Number(n || 0).toFixed(2)}`;
+const money = (n) => `$ ${Number(n || 0).toFixed(2)}`;
 const hr = (y) => {
   doc
     .moveTo(48, y)
