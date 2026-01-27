@@ -424,7 +424,7 @@ function updatePromoterTotal() {
     total += (Number(v.qty) || 0) * (Number(v.unitPrice) || 0);
   });
   const el = document.getElementById("promoterTotal");
-  if (el) el.textContent = `RM ${total.toFixed(2)}`;
+  if (el) el.textContent = `$ ${total.toFixed(2)}`;
 }
 
 async function saveOrder() {
@@ -509,7 +509,7 @@ function renderOrdersTable(orders) {
         <td>${statusBadge(o.status)}</td>
         <td><b>${o.customerName}</b><br><span class="muted">${o.phone}${o.email ? " • " + o.email : ""}</span></td>
         <td>${items}</td>
-        <td>RM ${total}<br><span class="muted">Receipt: ${receipt}</span></td>
+        <td>$ ${total}<br><span class="muted">Receipt: ${receipt}</span></td>
         <td><span class="muted">${o.createdBy}</span></td>
 <td>
   <button class="btn" data-open="${o._id}">Open</button>
@@ -684,7 +684,7 @@ const itemsRows = order.items.map((it) => {
       <td>${it.name}</td>
       <td><input class="input small" data-qty="${it.productId}" type="number" value="${it.qty}" /></td>
       <td><input class="input small" data-up="${it.productId}" type="number" step="0.01" value="${it.unitPrice}" /></td>
-      <td><b>RM ${(it.qty * it.unitPrice).toFixed(2)}</b></td>
+      <td><b>$ ${(it.qty * it.unitPrice).toFixed(2)}</b></td>
     </tr>
   `;
 }).join("");
@@ -740,7 +740,7 @@ const receiptLink = order.receipt?.pdfFileId
     
     <div class="rowBetween" style="margin-top:12px">
   <b>Grand Total:</b>
-  <b>RM ${Number(order.finalTotal || 0).toFixed(2)}</b>
+  <b>$ ${Number(order.finalTotal || 0).toFixed(2)}</b>
 </div>
 
 
