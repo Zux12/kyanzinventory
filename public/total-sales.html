@@ -204,14 +204,12 @@
       return x.toFixed(2);
     }
 
-   async function loadTotalSales(){
+async function loadTotalSales(){
   hideError();
   setPill("Loading…", true);
 
   try{
-    const url = new URL("/api/summary/total-sales", window.location.origin).toString();
-
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetch("/api/summary/total-sales", { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP " + res.status);
 
     const data = await res.json();
@@ -224,14 +222,14 @@
     $("totalSales").textContent = `${currency} ${money(total)}`;
     $("paidOrders").textContent = String(count);
 
-    const now = new Date();
-    $("lastUpdated").textContent = "Last updated: " + now.toLocaleString();
+    $("lastUpdated").textContent = "Last updated: " + new Date().toLocaleString();
     setPill("Live", true);
 
-  }catch(err){
+  } catch (err){
     showError("Failed to load totals: " + err.message);
   }
 }
+
 
 
 
