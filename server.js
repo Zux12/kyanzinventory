@@ -1040,6 +1040,40 @@ app.get("*", (req, res) => {
   }
 });
 
+// =======================
+// SALES SUMMARY
+// =======================
+app.get(
+  "/api/summary/total-sales",
+  requireAuth,
+  requireRole("admin", "cashier"),
+  async (req, res) => {
+    try {
+      const rows = await Order.aggregate([
+        { $match: { status: "paid" } },
+        {
+          $group: {
+            _id: null,
+            totalSales: { $sum: "$finalTotal" },
+            paidOrders: { $sum: 1 }
+          }
+        }
+      ]);
+
+      const s = rows[0] || { totalSales: 0, paidOrders: 0 };
+
+      res.json({
+        currency: "SGD",
+        totalSales: Number((s.totalSales || 0).toFixed(2)),
+        paidOrders: s.paidOrders || 0
+      });
+    } catch (e) {
+      console.error("total-sales error:", e);
+      res.status(500).json({ error: "Failed to calculate total sales" });
+    }
+  }
+);
+
 
 // =======================
 // Start
