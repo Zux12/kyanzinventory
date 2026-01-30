@@ -204,26 +204,14 @@
       return x.toFixed(2);
     }
 
-    async function loadTotalSales(){
+   async function loadTotalSales(){
   hideError();
   setPill("Loading…", true);
 
-  try {
-    const token = localStorage.getItem("token") || "";
-    if (!token) {
-      throw new Error("No login token found. Please login via /app.html first.");
-    }
-
+  try{
     const url = new URL("/api/summary/total-sales", window.location.origin).toString();
 
-    const res = await fetch(url, {
-      cache: "no-store",
-      headers: { Authorization: "Bearer " + token }
-    });
-
-    if (res.status === 401 || res.status === 403) {
-      throw new Error("Not authorized. Please login as admin/cashier in /app.html.");
-    }
+    const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP " + res.status);
 
     const data = await res.json();
@@ -240,10 +228,11 @@
     $("lastUpdated").textContent = "Last updated: " + now.toLocaleString();
     setPill("Live", true);
 
-  } catch (err) {
-    showError(err.message);
+  }catch(err){
+    showError("Failed to load totals: " + err.message);
   }
 }
+
 
 
     $("btnRefresh").addEventListener("click", loadTotalSales);
