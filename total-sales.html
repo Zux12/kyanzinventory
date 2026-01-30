@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>KYANZ — Total Sales</title>
+
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --card:#111826;
+      --text:#e9eef6;
+      --muted:#9fb0c7;
+      --border:rgba(255,255,255,.10);
+      --accent:#25D366;
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(900px 500px at 30% -10%, rgba(37,211,102,.12), transparent 55%), var(--bg);
+      color:var(--text);
+    }
+    .wrap{max-width:900px;margin:0 auto;padding:28px 16px 60px;}
+    .top{
+      display:flex;align-items:flex-end;justify-content:space-between;gap:14px;
+      margin-bottom:14px;
+    }
+    h1{margin:0;font-size:20px;letter-spacing:.2px}
+    .sub{margin:6px 0 0;color:var(--muted);font-size:13px}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card-h{
+      padding:16px 16px 12px;
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .pill{
+      font-size:12px;
+      font-weight:900;
+      padding:6px 10px;
+      border-radius:999px;
+      background: rgba(37,211,102,.95);
+      color:#0b1f12;
+      white-space:nowrap;
+    }
+    .card-b{padding:16px}
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 720px){ .grid{grid-template-columns:1fr} }
+
+    .stat{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px;
+      background: rgba(0,0,0,.18);
+    }
+    .stat .label{color:var(--muted);font-size:12px;margin-bottom:8px}
+    .stat .value{font-size:28px;font-weight:900;letter-spacing:.3px}
+    .stat .small{color:rgba(233,238,246,.82);font-size:13px;margin-top:6px}
+
+    .row{
+      display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+      margin-top:14px;
+    }
+    .btn{
+      appearance:none;
+      border:0;
+      border-radius:999px;
+      padding:11px 14px;
+      font-weight:900;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      text-decoration:none;
+      user-select:none;
+      transition: transform .12s ease, filter .12s ease, box-shadow .12s ease, background .12s ease;
+      -webkit-tap-highlight-color: transparent;
+      white-space:nowrap;
+    }
+    .btn:active{transform: scale(.98)}
+    .btn-primary{
+      background: var(--accent);
+      color:#0b1f12;
+      box-shadow: 0 12px 28px rgba(37,211,102,.25);
+    }
+    .btn-primary:hover{filter:brightness(.98); box-shadow: 0 18px 36px rgba(37,211,102,.34)}
+    .btn-ghost{
+      background: rgba(255,255,255,.07);
+      color: var(--text);
+      border:1px solid var(--border);
+    }
+    .btn-ghost:hover{background: rgba(255,255,255,.10)}
+    .meta{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:10px;
+      line-height:1.5;
+    }
+    .error{
+      margin-top:12px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,92,92,.35);
+      background: rgba(255,92,92,.08);
+      color: rgba(255,255,255,.92);
+      display:none;
+    }
+
+    @media print{
+      .btn, .sub, .meta{display:none !important;}
+      body{background:#fff;color:#000}
+      .card{box-shadow:none;border:1px solid #ddd}
+      .pill{background:#ddd;color:#000}
+      .stat{background:#fff;border:1px solid #ddd}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>KYANZ — Total Sales</h1>
+        <div class="sub">Paid orders only (status = <b>paid</b>)</div>
+      </div>
+      <span class="pill" id="statusPill">Loading…</span>
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <div style="font-weight:900;">Sales Summary</div>
+        <div style="color:var(--muted); font-size:12px;" id="lastUpdated">—</div>
+      </div>
+
+      <div class="card-b">
+        <div class="grid">
+          <div class="stat">
+            <div class="label">TOTAL SALES</div>
+            <div class="value" id="totalSales">—</div>
+            <div class="small" id="currencyNote">Currency: —</div>
+          </div>
+
+          <div class="stat">
+            <div class="label">PAID ORDERS</div>
+            <div class="value" id="paidOrders">—</div>
+            <div class="small">Count of completed payments</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <button class="btn btn-primary" id="btnRefresh">🔄 Refresh</button>
+            <button class="btn btn-ghost" id="btnPrint">🖨️ Print</button>
+          </div>
+
+          <a class="btn btn-ghost" href="/app.html">⬅ Back to Console</a>
+        </div>
+
+        <div class="meta">
+          Data source: <code>/api/summary/total-sales</code><br/>
+          Tip: bookmark this page for cashier/admin use.
+        </div>
+
+        <div class="error" id="errBox"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function setPill(text, ok){
+      const pill = $("statusPill");
+      pill.textContent = text;
+      pill.style.background = ok ? "rgba(37,211,102,.95)" : "rgba(255,92,92,.95)";
+      pill.style.color = ok ? "#0b1f12" : "#2a0b0b";
+    }
+
+    function showError(msg){
+      const b = $("errBox");
+      b.style.display = "block";
+      b.textContent = msg;
+      setPill("Error", false);
+    }
+
+    function hideError(){
+      $("errBox").style.display = "none";
+    }
+
+    function money(n){
+      const x = Number(n || 0);
+      return x.toFixed(2);
+    }
+
+    async function loadTotalSales(){
+      hideError();
+      setPill("Loading…", true);
+
+      try{
+        const res = await fetch("/api/summary/total-sales", { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+
+        const data = await res.json();
+        const currency = data.currency || "SGD";
+        const total = Number(data.totalSales || 0);
+        const count = Number(data.paidOrders || 0);
+
+        $("currencyNote").textContent = "Currency: " + currency;
+        $("totalSales").textContent = `${currency} ${money(total)}`;
+        $("paidOrders").textContent = String(count);
+
+        const now = new Date();
+        $("lastUpdated").textContent = "Last updated: " + now.toLocaleString();
+        setPill("Live", true);
+
+      }catch(err){
+        showError("Failed to load totals. Make sure your backend endpoint exists: /api/summary/total-sales. Details: " + err.message);
+      }
+    }
+
+    $("btnRefresh").addEventListener("click", loadTotalSales);
+    $("btnPrint").addEventListener("click", () => window.print());
+
+    loadTotalSales();
+  </script>
+</body>
+</html>
