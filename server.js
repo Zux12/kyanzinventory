@@ -1033,6 +1033,37 @@ app.get("/api/audit", requireAuth, async (req, res) => {
   res.json(logs);
 });
 
+
+// =======================
+// SALES SUMMARY (NO AUTH)
+// =======================
+app.get("/api/summary/total-sales", async (req, res) => {
+  try {
+    const rows = await Order.aggregate([
+      { $match: { status: "paid" } },
+      {
+        $group: {
+          _id: null,
+          totalSales: { $sum: { $ifNull: ["$finalTotal", 0] } },
+          paidOrders: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const s = rows[0] || { totalSales: 0, paidOrders: 0 };
+
+    res.json({
+      currency: "SGD",
+      totalSales: Number((s.totalSales || 0).toFixed(2)),
+      paidOrders: s.paidOrders || 0
+    });
+  } catch (e) {
+    console.error("total-sales error:", e);
+    res.status(500).json({ error: "Failed to calculate total sales" });
+  }
+});
+
+
 // SPA fallback
 app.get("*", (req, res) => {
   if (!res.headersSent) {
