@@ -205,30 +205,46 @@
     }
 
     async function loadTotalSales(){
-      hideError();
-      setPill("Loading…", true);
+  hideError();
+  setPill("Loading…", true);
 
-      try{
-        const res = await fetch("/api/summary/total-sales", { cache: "no-store" });
-        if (!res.ok) throw new Error("HTTP " + res.status);
-
-        const data = await res.json();
-        const currency = data.currency || "SGD";
-        const total = Number(data.totalSales || 0);
-        const count = Number(data.paidOrders || 0);
-
-        $("currencyNote").textContent = "Currency: " + currency;
-        $("totalSales").textContent = `${currency} ${money(total)}`;
-        $("paidOrders").textContent = String(count);
-
-        const now = new Date();
-        $("lastUpdated").textContent = "Last updated: " + now.toLocaleString();
-        setPill("Live", true);
-
-      }catch(err){
-        showError("Failed to load totals. Make sure your backend endpoint exists: /api/summary/total-sales. Details: " + err.message);
-      }
+  try {
+    const token = localStorage.getItem("token") || "";
+    if (!token) {
+      throw new Error("No login token found. Please login via /app.html first.");
     }
+
+    const url = new URL("/api/summary/total-sales", window.location.origin).toString();
+
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: { Authorization: "Bearer " + token }
+    });
+
+    if (res.status === 401 || res.status === 403) {
+      throw new Error("Not authorized. Please login as admin/cashier in /app.html.");
+    }
+    if (!res.ok) throw new Error("HTTP " + res.status);
+
+    const data = await res.json();
+
+    const currency = data.currency || "SGD";
+    const total = Number(data.totalSales || 0);
+    const count = Number(data.paidOrders || 0);
+
+    $("currencyNote").textContent = "Currency: " + currency;
+    $("totalSales").textContent = `${currency} ${money(total)}`;
+    $("paidOrders").textContent = String(count);
+
+    const now = new Date();
+    $("lastUpdated").textContent = "Last updated: " + now.toLocaleString();
+    setPill("Live", true);
+
+  } catch (err) {
+    showError(err.message);
+  }
+}
+
 
     $("btnRefresh").addEventListener("click", loadTotalSales);
     $("btnPrint").addEventListener("click", () => window.print());
