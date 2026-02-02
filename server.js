@@ -1039,7 +1039,8 @@ app.get("/api/audit", requireAuth, async (req, res) => {
 // =======================
 app.get("/api/summary/total-sales", async (req, res) => {
   try {
-    const rows = await Order.aggregate([
+    // Total sales + orders
+    const sales = await Order.aggregate([
       { $match: { status: "paid" } },
       {
         $group: {
@@ -1050,18 +1051,47 @@ app.get("/api/summary/total-sales", async (req, res) => {
       }
     ]);
 
-    const s = rows[0] || { totalSales: 0, paidOrders: 0 };
+    // Total bottles sold
+    const bottles = await Order.aggregate([
+      { $match: { status: "paid" } },
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id: null,
+          totalBottles: { $sum: { $ifNull: ["$items.qty", 0] } }
+        }
+      }
+    ]);
+
+    // Bottles sold per scent
+    const perScentRaw = await Order.aggregate([
+      { $match: { status: "paid" } },
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id: "$items.name",
+          bottles: { $sum: { $ifNull: ["$items.qty", 0] } }
+        }
+      },
+      { $sort: { bottles: -1 } }
+    ]);
 
     res.json({
       currency: "SGD",
-      totalSales: Number((s.totalSales || 0).toFixed(2)),
-      paidOrders: s.paidOrders || 0
+      totalSales: Number((sales[0]?.totalSales || 0).toFixed(2)),
+      paidOrders: sales[0]?.paidOrders || 0,
+      totalBottles: bottles[0]?.totalBottles || 0,
+      perScent: perScentRaw.map(s => ({
+        scent: s._id,
+        bottles: s.bottles
+      }))
     });
-  } catch (e) {
-    console.error("total-sales error:", e);
-    res.status(500).json({ error: "Failed to calculate total sales" });
+  } catch (err) {
+    console.error("Sales summary error:", err);
+    res.status(500).json({ error: "Failed to calculate sales summary" });
   }
 });
+
 
 
 // SPA fallback
