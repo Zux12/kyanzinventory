@@ -2,113 +2,246 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>KYANZ – Total Sales</title>
+  <title>KYANZ – Sales Summary</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
-    body {
-      margin: 0;
+    body{
+      margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: #0b0f14;
-      color: #e9eef6;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
+      background:#0b0f14;
+      color:#e9eef6;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      min-height:100vh;
+      padding:28px 14px 60px;
     }
 
-    .box {
-      background: #111826;
-      border: 1px solid rgba(255,255,255,.1);
-      border-radius: 14px;
-      padding: 28px 32px;
-      min-width: 280px;
-      text-align: center;
-      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    .box{
+      width:min(860px, 100%);
+      background:#111826;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      padding:22px 22px 18px;
+      box-shadow:0 20px 60px rgba(0,0,0,.5);
     }
 
-    h1 {
-      margin: 0 0 14px;
-      font-size: 18px;
-      letter-spacing: .3px;
+    h1{
+      margin:0 0 6px;
+      font-size:18px;
+      letter-spacing:.2px;
+    }
+    .meta{
+      color:#9fb0c7;
+      font-size:12.5px;
+      margin-bottom:16px;
+      line-height:1.4;
     }
 
-    .amount {
-      font-size: 32px;
-      font-weight: 800;
-      margin: 10px 0;
+    .stats{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      margin-bottom:14px;
+    }
+    @media (max-width: 640px){
+      .stats{grid-template-columns:1fr}
     }
 
-    .meta {
-      font-size: 13px;
-      color: #9fb0c7;
-      margin-top: 6px;
+    .card{
+      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      padding:14px;
+    }
+    .label{
+      color:#9fb0c7;
+      font-size:12px;
+      margin-bottom:6px;
+    }
+    .value{
+      font-size:26px;
+      font-weight:800;
+      letter-spacing:.2px;
     }
 
-    .error {
-      margin-top: 14px;
-      color: #ff6b6b;
-      font-size: 13px;
-      display: none;
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      margin-top:10px;
     }
 
-    button {
-      margin-top: 18px;
-      padding: 8px 14px;
-      border-radius: 999px;
-      border: 0;
-      cursor: pointer;
-      font-weight: 700;
-      background: #25D366;
-      color: #0b1f12;
+    button{
+      padding:9px 14px;
+      border-radius:999px;
+      border:0;
+      cursor:pointer;
+      font-weight:800;
+      background:#25D366;
+      color:#0b1f12;
+    }
+    button:active{transform:scale(.98)}
+    .smallbtn{
+      background:rgba(255,255,255,.08);
+      color:#e9eef6;
+      border:1px solid rgba(255,255,255,.10);
     }
 
-    button:active {
-      transform: scale(.97);
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:10px;
+      overflow:hidden;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
     }
+    th, td{
+      padding:10px 10px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      text-align:left;
+      font-size:13px;
+    }
+    th{
+      color:#cfe0f7;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      background:rgba(255,255,255,.04);
+    }
+    tr:last-child td{border-bottom:0}
+
+    .error{
+      margin-top:12px;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(255,92,92,.35);
+      background:rgba(255,92,92,.08);
+      color:#ffd1d1;
+      font-size:13px;
+      display:none;
+    }
+
+    .muted{color:#9fb0c7}
   </style>
 </head>
 
 <body>
   <div class="box">
-    <h1>KYANZ – Total Sales</h1>
+    <h1>KYANZ – Sales Summary</h1>
+    <div class="meta">
+      Data source: <code>/api/summary/total-sales</code><br>
+      Counts only orders with <b>status = paid</b>.
+    </div>
 
-    <div class="amount" id="total">—</div>
-    <div class="meta" id="orders">—</div>
-    <div class="meta" id="updated">—</div>
+    <div class="stats">
+      <div class="card">
+        <div class="label">Total Sales</div>
+        <div class="value" id="totalSales">—</div>
+        <div class="muted" style="margin-top:6px;font-size:12.5px;">
+          Paid orders: <b id="paidOrders">—</b>
+        </div>
+      </div>
 
-    <button onclick="load()">Refresh</button>
+      <div class="card">
+        <div class="label">Total Bottles Sold</div>
+        <div class="value" id="totalBottles">—</div>
+        <div class="muted" style="margin-top:6px;font-size:12.5px;">
+          Updated: <span id="updated">—</span>
+        </div>
+      </div>
+    </div>
 
-    <div class="error" id="error"></div>
+    <div class="card">
+      <div class="label">Bottles Sold per Scent</div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Scent</th>
+            <th style="width:160px;">Bottles</th>
+          </tr>
+        </thead>
+        <tbody id="scentRows">
+          <tr><td colspan="2" class="muted">Loading…</td></tr>
+        </tbody>
+      </table>
+
+      <div class="row">
+        <div class="muted" style="font-size:12.5px;">
+          Tip: click Refresh after cashier updates.
+        </div>
+        <div>
+          <button onclick="load()">Refresh</button>
+          <button class="smallbtn" onclick="window.print()">Print</button>
+        </div>
+      </div>
+
+      <div class="error" id="error"></div>
+    </div>
   </div>
 
   <script>
-    async function load() {
-      const totalEl = document.getElementById("total");
-      const ordersEl = document.getElementById("orders");
-      const updatedEl = document.getElementById("updated");
-      const errorEl = document.getElementById("error");
+    function money(n){
+      const x = Number(n || 0);
+      return x.toFixed(2);
+    }
 
-      errorEl.style.display = "none";
-      totalEl.textContent = "Loading…";
-      ordersEl.textContent = "";
+    function showError(msg){
+      const e = document.getElementById("error");
+      e.textContent = msg;
+      e.style.display = "block";
+    }
 
-      try {
+    function hideError(){
+      const e = document.getElementById("error");
+      e.style.display = "none";
+    }
+
+    function setRows(list){
+      const tbody = document.getElementById("scentRows");
+      tbody.innerHTML = "";
+
+      if (!Array.isArray(list) || list.length === 0){
+        tbody.innerHTML = `<tr><td colspan="2" class="muted">No paid items found.</td></tr>`;
+        return;
+      }
+
+      for (const row of list){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${row.scent}</td><td><b>${row.bottles}</b></td>`;
+        tbody.appendChild(tr);
+      }
+    }
+
+    async function load(){
+      hideError();
+      document.getElementById("totalSales").textContent = "Loading…";
+      document.getElementById("paidOrders").textContent = "—";
+      document.getElementById("totalBottles").textContent = "—";
+      setRows([{scent:"Loading…", bottles:""}]);
+
+      try{
         const res = await fetch("/api/summary/total-sales", { cache: "no-store" });
         if (!res.ok) throw new Error("HTTP " + res.status);
 
         const data = await res.json();
 
-        totalEl.textContent = `${data.currency} ${Number(data.totalSales).toFixed(2)}`;
-        ordersEl.textContent = `Paid orders: ${data.paidOrders}`;
-        updatedEl.textContent = "Updated: " + new Date().toLocaleString();
+        const currency = data.currency || "SGD";
+        document.getElementById("totalSales").textContent = `${currency} ${money(data.totalSales)}`;
+        document.getElementById("paidOrders").textContent = String(data.paidOrders ?? 0);
+        document.getElementById("totalBottles").textContent = String(data.totalBottles ?? 0);
+        document.getElementById("updated").textContent = new Date().toLocaleString();
 
-      } catch (err) {
-        totalEl.textContent = "—";
-        ordersEl.textContent = "";
-        updatedEl.textContent = "";
-        errorEl.textContent = "Failed to load total sales";
-        errorEl.style.display = "block";
+        setRows(data.perScent || []);
+      }catch(err){
+        document.getElementById("totalSales").textContent = "—";
+        document.getElementById("totalBottles").textContent = "—";
+        setRows([]);
+        showError("Failed to load sales summary: " + err.message);
         console.error(err);
       }
     }
